@@ -27,11 +27,11 @@ export default async function TransactionsPage() {
   return (
     <div className="p-6 space-y-8 max-w-4xl mx-auto">
       <header className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Transações</h1>
       </header>
 
       <div className="bg-accent/30 p-6 rounded-2xl border">
-        <h2 className="text-lg font-semibold mb-4">Add New Transaction</h2>
+        <h2 className="text-lg font-semibold mb-4">Adicionar Nova Transação</h2>
         <TransactionForm categories={categories || []} />
       </div>
 
@@ -39,27 +39,28 @@ export default async function TransactionsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="text-right">Amount</TableHead>
+              <TableHead>Data</TableHead>
+              <TableHead>Descrição</TableHead>
+              <TableHead>Categoria</TableHead>
+              <TableHead className="text-right">Valor</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {transactions?.map((t) => (
               <TableRow key={t.id}>
-                <TableCell>{t.date}</TableCell>
+                <TableCell>{new Date(t.date).toLocaleDateString('pt-BR')}</TableCell>
                 <TableCell className="font-medium">{t.description}</TableCell>
                 <TableCell>{(t.categories as any)?.name}</TableCell>
                 <TableCell className={`text-right font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                  {t.type === 'income' ? '+' : '-'}{t.amount.toFixed(2)}
+                  {t.type === 'income' ? '+' : '-'}
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.amount)}
                 </TableCell>
               </TableRow>
             ))}
             {(!transactions || transactions.length === 0) && (
               <TableRow>
                 <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  No transactions found.
+                  Nenhuma transação encontrada.
                 </TableCell>
               </TableRow>
             )}

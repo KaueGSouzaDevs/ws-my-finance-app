@@ -32,9 +32,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-accent/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold">Criar uma conta</CardTitle>
           <CardDescription>
-            Enter your details below to create your account
+            Insira seus dados abaixo para criar sua conta
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -45,26 +45,26 @@ export default function RegisterPage() {
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="full_name">Full Name</label>
-              <Input id="full_name" name="full_name" placeholder="John Doe" required />
+              <label className="text-sm font-medium" htmlFor="full_name">Nome Completo</label>
+              <Input id="full_name" name="full_name" placeholder="João Silva" required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email">Email</label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <label className="text-sm font-medium" htmlFor="email">E-mail</label>
+              <Input id="email" name="email" type="email" placeholder="nome@exemplo.com" required />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="password">Password</label>
+              <label className="text-sm font-medium" htmlFor="password">Senha</label>
               <Input id="password" name="password" type="password" required />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Criando conta..." : "Criar conta"}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
+              Já tem uma conta?{" "}
               <Link href="/auth/login" className="text-primary hover:underline font-medium">
-                Sign in
+                Entrar
               </Link>
             </div>
           </CardFooter>

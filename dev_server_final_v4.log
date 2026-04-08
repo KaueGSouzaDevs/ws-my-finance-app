@@ -1,0 +1,14 @@
+
+> my-finance-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env.local
+✓ Ready in 588ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+ GET / 307 in 1481ms (next.js: 353ms, proxy.ts: 158ms, application-code: 970ms)
+ GET /auth/login 200 in 450ms (next.js: 142ms, proxy.ts: 13ms, application-code: 295ms)
+ GET /auth/register 200 in 136ms (next.js: 31ms, proxy.ts: 16ms, application-code: 90ms)

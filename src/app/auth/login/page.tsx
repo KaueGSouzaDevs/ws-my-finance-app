@@ -31,9 +31,9 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-accent/30 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
+          <CardTitle className="text-2xl font-bold">Entrar</CardTitle>
           <CardDescription>
-            Enter your email and password to access your account
+            Insira seu e-mail e senha para acessar sua conta
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
@@ -44,24 +44,24 @@ export default function LoginPage() {
               </div>
             )}
             <div className="space-y-2">
-              <label className="text-sm font-medium" htmlFor="email">Email</label>
-              <Input id="email" name="email" type="email" placeholder="m@example.com" required />
+              <label className="text-sm font-medium" htmlFor="email">E-mail</label>
+              <Input id="email" name="email" type="email" placeholder="nome@exemplo.com" required />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium" htmlFor="password">Password</label>
+                <label className="text-sm font-medium" htmlFor="password">Senha</label>
               </div>
               <Input id="password" name="password" type="password" required />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
             <div className="text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
+              Não tem uma conta?{" "}
               <Link href="/auth/register" className="text-primary hover:underline font-medium">
-                Sign up
+                Cadastre-se
               </Link>
             </div>
           </CardFooter>

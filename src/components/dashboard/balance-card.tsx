@@ -9,11 +9,11 @@ export function BalanceCard({ balance, currency }: BalanceCardProps) {
   return (
     <Card className="bg-primary text-primary-foreground">
       <CardHeader>
-        <CardTitle className="text-sm font-medium opacity-80">Total Balance</CardTitle>
+        <CardTitle className="text-sm font-medium opacity-80">Saldo Total</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="text-3xl font-bold">
-          {new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(balance)}
+          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(balance)}
         </div>
       </CardContent>
     </Card>
