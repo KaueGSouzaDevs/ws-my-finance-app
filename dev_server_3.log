@@ -1,0 +1,11 @@
+
+> my-finance-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.2 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env.local
+✓ Ready in 1847ms
+
+ GET /dashboard 200 in 1129ms (next.js: 458ms, application-code: 671ms)

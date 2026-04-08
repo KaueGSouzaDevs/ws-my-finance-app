@@ -77,3 +77,7 @@ https://supabase.com/dashboard/project/_/settings/api
   10 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   11 |     {
  GET / 200 in 61ms (next.js: 4ms, application-code: 57ms)
+  Reload env: .env.local
+✓ Compiled in 992ms
+ GET /dashboard 200 in 1668ms (next.js: 1102ms, application-code: 565ms)
+[?25h
