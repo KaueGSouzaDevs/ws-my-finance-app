@@ -5,12 +5,12 @@ import { z } from 'zod';
 import { createCategory } from '@/app/actions/categories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const CategorySchema = z.object({
   name: z.string().min(1, "O nome é obrigatório"),
   icon: z.string().min(1, "O ícone é obrigatório"),
-  color: z.string().min(1, "A cor é obrigatória"),
+  color: z.string().min(1, "A cor é obrigatória").regex(/^#[0-9A-F]{6}$/i, "Cor inválida"),
 });
 
 type CategoryFormValues = z.infer<typeof CategorySchema>;
@@ -19,10 +19,12 @@ export function CategoryForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CategoryFormValues>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CategoryFormValues>({
     resolver: zodResolver(CategorySchema),
     defaultValues: { name: '', icon: '💰', color: '#007AFF' },
   });
+
+  const selectedColor = watch('color');
 
   async function onSubmit(values: CategoryFormValues) {
     setLoading(true);
@@ -62,8 +64,17 @@ export function CategoryForm() {
         <div className="space-y-2">
           <label className="text-sm font-medium">Cor (Hex)</label>
           <div className="flex gap-2">
-            <Input type="color" {...register('color')} className="w-12 h-10 p-1" />
-            <Input {...register('color')} placeholder="#007AFF" />
+            <input
+              type="color"
+              value={selectedColor}
+              onChange={(e) => setValue('color', e.target.value)}
+              className="w-12 h-10 p-1 rounded-md border cursor-pointer"
+            />
+            <Input
+              {...register('color')}
+              placeholder="#007AFF"
+              className="font-mono"
+            />
           </div>
           {errors.color && <p className="text-xs text-red-500">{errors.color.message}</p>}
         </div>

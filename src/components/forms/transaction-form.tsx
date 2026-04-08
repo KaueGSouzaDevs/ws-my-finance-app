@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createTransaction } from '@/app/actions/transactions';
+import { createTransaction, updateTransaction } from '@/app/actions/transactions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
@@ -31,24 +31,37 @@ interface Category {
 
 interface TransactionFormProps {
   categories: Category[];
+  initialData?: TransactionFormValues & { id: string };
+  onSuccess?: () => void;
 }
 
-export function TransactionForm({ categories }: TransactionFormProps) {
+export function TransactionForm({ categories, initialData, onSuccess }: TransactionFormProps) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<TransactionFormValues>({
     resolver: zodResolver(TransactionSchema) as any,
-    defaultValues: { type: 'expense', amount: 0, date: new Date().toISOString().split('T')[0] },
+    defaultValues: initialData || {
+      type: 'expense',
+      amount: 0,
+      date: new Date().toISOString().split('T')[0],
+      category_id: ''
+    },
   });
 
   async function onSubmit(values: TransactionFormValues) {
     setLoading(true);
     setMessage(null);
     try {
-      await createTransaction(values);
-      reset();
-      setMessage({ type: 'success', text: "Transação registrada com sucesso!" });
+      if (initialData) {
+        await updateTransaction(initialData.id, values);
+        setMessage({ type: 'success', text: "Transação atualizada com sucesso!" });
+      } else {
+        await createTransaction(values);
+        reset();
+        setMessage({ type: 'success', text: "Transação registrada com sucesso!" });
+      }
+      if (onSuccess) onSuccess();
     } catch (e: any) {
       setMessage({ type: 'error', text: e.message || "Algo deu errado" });
     } finally {
@@ -113,7 +126,7 @@ export function TransactionForm({ categories }: TransactionFormProps) {
       </div>
 
       <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Salvando..." : "Salvar Transação"}
+        {loading ? "Salvando..." : (initialData ? "Atualizar Transação" : "Salvar Transação")}
       </Button>
     </form>
   );
