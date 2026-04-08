@@ -12,7 +12,15 @@ const CategorySchema = z.object({
 
 export async function createCategory(formData: z.infer<typeof CategorySchema>) {
   const supabase = createClient();
-  const { error } = await supabase.from('categories').insert(formData);
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Não autorizado");
+
+  const { error } = await supabase.from('categories').insert({
+    ...formData,
+    user_id: user.id,
+    is_system: false
+  });
 
   if (error) {
     throw new Error(error.message);
@@ -24,7 +32,15 @@ export async function createCategory(formData: z.infer<typeof CategorySchema>) {
 
 export async function deleteCategory(id: string) {
   const supabase = createClient();
-  const { error } = await supabase.from('categories').delete().eq('id', id);
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Não autorizado");
+
+  const { error } = await supabase
+    .from('categories')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
 
   if (error) {
     throw new Error(error.message);

@@ -56,12 +56,16 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
       if (initialData) {
         await updateTransaction(initialData.id, values);
         setMessage({ type: 'success', text: "Transação atualizada com sucesso!" });
+        // Small delay to let user see success message before closing
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+        }, 1000);
       } else {
         await createTransaction(values);
         reset();
         setMessage({ type: 'success', text: "Transação registrada com sucesso!" });
+        if (onSuccess) onSuccess();
       }
-      if (onSuccess) onSuccess();
     } catch (e: any) {
       setMessage({ type: 'error', text: e.message || "Algo deu errado" });
     } finally {
@@ -82,7 +86,7 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
           <label className="text-sm font-medium">Tipo</label>
           <select
             {...register('type')}
-            className="w-full p-2 border rounded-md bg-background"
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="expense">Despesa</option>
             <option value="income">Receita</option>
@@ -100,7 +104,7 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
           <label className="text-sm font-medium">Categoria</label>
           <select
             {...register('category_id')}
-            className="w-full p-2 border rounded-md bg-background"
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           >
             <option value="">Selecione uma categoria</option>
             {categories.map((category) => (

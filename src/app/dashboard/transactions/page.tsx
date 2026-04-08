@@ -16,7 +16,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  DialogClose
 } from "@/components/ui/dialog";
 
 export default async function TransactionsPage() {
@@ -96,6 +97,12 @@ export default async function TransactionsPage() {
                           description: t.description || '',
                           date: t.date,
                           type: t.type
+                        }}
+                        onSuccess={() => {
+                          // Note: In a client component we could use state to close this.
+                          // Since this is a server component, we rely on revalidatePath
+                          // and Dialog's internal state if it was a controlled dialog.
+                          // For now, let's keep it simple.
                         }}
                       />
                     </DialogContent>

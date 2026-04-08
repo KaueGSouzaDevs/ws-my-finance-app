@@ -24,3 +24,23 @@
  GET / 307 in 1520ms (next.js: 355ms, proxy.ts: 163ms, application-code: 1003ms)
  GET /auth/login 200 in 519ms (next.js: 175ms, proxy.ts: 18ms, application-code: 326ms)
  GET /auth/login 200 in 250ms (next.js: 19ms, proxy.ts: 11ms, application-code: 220ms)
+
+<--- Last few GCs --->
+
+[276676:0x7d89000]   933267 ms: Scavenge 3922.4 (4000.5) -> 3918.2 (4018.3) MB, pooled: 0 MB, 28.40 / 0.00 ms  (average mu = 0.190, current mu = 0.152) allocation failure;
+[276676:0x7d89000]   937969 ms: Mark-Compact 3933.8 (4020.0) -> 3902.2 (4009.9) MB, pooled: 2 MB, 4538.32 / 27.51 ms  (average mu = 0.191, current mu = 0.193) allocation failure; scavenge might not succeed
+
+
+<--- JS stacktrace --->
+
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0xe42d60 node::OOMErrorHandler(char const*, v8::OOMDetails const&) [next-server (v16.2.2)]
+ 2: 0x121ddd0 v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [next-server (v16.2.2)]
+ 3: 0x121e0a7 v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, v8::OOMDetails const&) [next-server (v16.2.2)]
+ 4: 0x144ba05  [next-server (v16.2.2)]
+ 5: 0x144ba33  [next-server (v16.2.2)]
+ 6: 0x1464b0a  [next-server (v16.2.2)]
+ 7: 0x1467cd8  [next-server (v16.2.2)]
+ 8: 0x1ccd051  [next-server (v16.2.2)]

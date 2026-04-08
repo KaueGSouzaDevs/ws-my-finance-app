@@ -12,26 +12,37 @@ export interface Database {
       categories: {
         Row: {
           color: string
-          icon: string
           id: string
+          icon: string
           is_system: boolean | null
           name: string
+          user_id: string | null
         }
         Insert: {
           color: string
-          icon: string
           id?: string
+          icon: string
           is_system?: boolean | null
           name: string
+          user_id?: string | null
         }
         Update: {
           color?: string
-          icon?: string
           id?: string
+          icon?: string
           is_system?: boolean | null
           name?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "categories_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       profiles: {
         Row: {
@@ -55,7 +66,15 @@ export interface Database {
           id?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       transactions: {
         Row: {
@@ -65,7 +84,7 @@ export interface Database {
           date: string
           description: string | null
           id: string
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: "income" | "expense"
           user_id: string
         }
         Insert: {
@@ -75,7 +94,7 @@ export interface Database {
           date?: string
           description?: string | null
           id?: string
-          type: Database["public"]["Enums"]["transaction_type"]
+          type: "income" | "expense"
           user_id: string
         }
         Update: {
@@ -85,7 +104,7 @@ export interface Database {
           date?: string
           description?: string | null
           id?: string
-          type?: Database["public"]["Enums"]["transaction_type"]
+          type?: "income" | "expense"
           user_id?: string
         }
         Relationships: [
@@ -96,6 +115,13 @@ export interface Database {
             referencedRelation: "categories"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
         ]
       }
     }

@@ -40,13 +40,11 @@ export async function signup(formData: z.infer<typeof AuthSchema> & { full_name:
     return { error: error.message };
   }
 
-  // Profiles are usually created via a Supabase trigger,
-  // but we can ensure it here if the trigger isn't set up.
   if (data.user) {
     await supabase.from('profiles').insert({
       id: data.user.id,
       full_name: formData.full_name,
-      currency: 'USD'
+      currency: 'BRL'
     });
   }
 

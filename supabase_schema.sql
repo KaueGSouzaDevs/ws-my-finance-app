@@ -7,13 +7,14 @@ CREATE TABLE profiles (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   full_name TEXT,
   avatar_url TEXT,
-  currency TEXT DEFAULT 'USD',
+  currency TEXT DEFAULT 'BRL',
   CONSTRAINT full_name_length CHECK (char_length(full_name) >= 2)
 );
 
 -- 3. Categories Table
 CREATE TABLE categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users, -- NULL for system categories
   name TEXT NOT NULL,
   icon TEXT NOT NULL, -- Emoji or Lucide icon name
   color TEXT NOT NULL, -- Hex code
@@ -41,9 +42,18 @@ ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view own profile" ON profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
--- Categories: Everyone can read (system categories), only owners can manage custom ones
-CREATE POLICY "Categories are viewable by everyone" ON categories FOR SELECT USING (true);
-CREATE POLICY "Users can create own categories" ON categories FOR INSERT WITH CHECK (auth.uid() = auth.uid());
+-- Categories: Users can see system categories OR their own categories
+CREATE POLICY "Categories viewable by user" ON categories
+  FOR SELECT USING (is_system = true OR auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own categories" ON categories
+  FOR INSERT WITH CHECK (auth.uid() = user_id AND is_system = false);
+
+CREATE POLICY "Users can update own categories" ON categories
+  FOR UPDATE USING (auth.uid() = user_id AND is_system = false);
+
+CREATE POLICY "Users can delete own categories" ON categories
+  FOR DELETE USING (auth.uid() = user_id AND is_system = false);
 
 -- Transactions: Strict user isolation
 CREATE POLICY "Users can manage own transactions" ON transactions
@@ -52,8 +62,10 @@ CREATE POLICY "Users can manage own transactions" ON transactions
 
 -- Insert some default categories
 INSERT INTO categories (name, icon, color, is_system) VALUES
-('Food', 'Utensils', '#FF9500', true),
-('Transport', 'Car', '#007AFF', true),
-('Shopping', 'ShoppingBag', '#FF2D55', true),
-('Salary', 'Banknote', '#34C759', true),
-('Entertainment', 'Play', '#5856D6', true);
+('Alimentação', '🍴', '#FF9500', true),
+('Transporte', '🚗', '#007AFF', true),
+('Compras', '🛍️', '#FF2D55', true),
+('Salário', '💰', '#34C759', true),
+('Lazer', '🎮', '#5856D6', true),
+('Saúde', '🏥', '#FF3B30', true),
+('Educação', '📚', '#AF52DE', true);
