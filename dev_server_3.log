@@ -9,3 +9,4 @@
 ✓ Ready in 1847ms
 
  GET /dashboard 200 in 1129ms (next.js: 458ms, application-code: 671ms)
+✓ Compiled in 2.2s
