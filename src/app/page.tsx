@@ -18,8 +18,8 @@ export default function LandingPage() {
         <Button asChild size="lg" className="rounded-full px-8">
           <Link href="/dashboard">Go to Dashboard</Link>
         </Button>
-        <Button variant="outline" size="lg" className="rounded-full px-8">
-          Learn More
+        <Button asChild variant="outline" size="lg" className="rounded-full px-8">
+          <Link href="/auth/login">Sign In</Link>
         </Button>
       </div>
 

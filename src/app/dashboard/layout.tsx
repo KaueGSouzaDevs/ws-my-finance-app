@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, ArrowUpRight, User } from 'lucide-react';
+import { LayoutDashboard, ArrowUpRight, User, LogOut } from 'lucide-react';
+import { signOut } from '@/app/actions/auth';
 
 function BottomNavItem({ icon, label, href }: { icon: React.ReactNode, label: string, href: string }) {
   return (
@@ -42,6 +43,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <span>Profile</span>
           </Link>
         </nav>
+        <div className="mt-auto">
+          <form action={signOut}>
+            <button className="flex items-center space-x-3 p-2 w-full rounded-lg hover:bg-red-50 text-red-600 transition-colors">
+              <LogOut size={20} />
+              <span>Sign Out</span>
+            </button>
+          </form>
+        </div>
       </aside>
 
       <main className="flex-1 overflow-y-auto pb-20 md:pb-0">
@@ -53,6 +62,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <BottomNavItem icon={<LayoutDashboard size={24} />} label="Home" href="/dashboard" />
         <BottomNavItem icon={<ArrowUpRight size={24} />} label="Transact" href="/dashboard/transactions" />
         <BottomNavItem icon={<User size={24} />} label="Profile" href="/dashboard/profile" />
+        <form action={signOut} className="flex flex-col items-center justify-center">
+          <button className="flex flex-col items-center justify-center space-y-1 text-red-500">
+            <LogOut size={24} />
+            <span className="text-xs">Exit</span>
+          </button>
+        </form>
       </nav>
     </div>
   );
