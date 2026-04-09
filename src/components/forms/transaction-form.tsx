@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createTransaction, updateTransaction } from '@/app/actions/transactions';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 const TransactionSchema = z.object({
@@ -14,15 +15,10 @@ const TransactionSchema = z.object({
   description: z.string().min(1, "A descrição é obrigatória").max(255),
   date: z.string(),
   type: z.enum(['income', 'expense']),
+  credit_card_id: z.string().uuid().optional().nullable(),
 });
 
-type TransactionFormValues = {
-  amount: number;
-  category_id: string;
-  description: string;
-  date: string;
-  type: 'income' | 'expense';
-};
+type TransactionFormValues = z.infer<typeof TransactionSchema>;
 
 interface Category {
   id: string;
@@ -38,17 +34,30 @@ interface TransactionFormProps {
 
 export function TransactionForm({ categories, initialData, onSuccess }: TransactionFormProps) {
   const [loading, setLoading] = useState(false);
+  const [cards, setCards] = useState<any[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<TransactionFormValues>({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<TransactionFormValues>({
     resolver: zodResolver(TransactionSchema) as any,
     defaultValues: initialData || {
       type: 'expense',
       amount: 0,
       date: new Date().toISOString().split('T')[0],
-      category_id: ''
+      category_id: '',
+      credit_card_id: null
     },
   });
+
+  const transactionType = watch('type');
+
+  useEffect(() => {
+    async function fetchCards() {
+      const supabase = createClient();
+      const { data } = await supabase.from('credit_cards' as any).select('id, name').order('name');
+      if (data) setCards(data);
+    }
+    fetchCards();
+  }, []);
 
   async function onSubmit(values: TransactionFormValues) {
     setLoading(true);
@@ -93,6 +102,11 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
             <select
               {...register('type')}
               className={selectStyles}
+              onChange={(e) => {
+                const val = e.target.value as 'income' | 'expense';
+                setValue('type', val);
+                if (val === 'income') setValue('credit_card_id', null);
+              }}
             >
               <option value="expense">📉 Despesa</option>
               <option value="income">📈 Receita</option>
@@ -132,16 +146,38 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
         </div>
 
         <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Método de Pagamento</label>
+          <div className="relative">
+            <select
+              {...register('credit_card_id')}
+              className={cn(selectStyles, transactionType === 'income' && "opacity-50 cursor-not-allowed")}
+              disabled={transactionType === 'income'}
+            >
+              <option value="">💰 Saldo em Conta</option>
+              {cards.map((card) => (
+                <option key={card.id} value={card.id}>
+                  💳 {card.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              ▼
+            </div>
+          </div>
+          {errors.credit_card_id && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.credit_card_id.message}</p>}
+        </div>
+
+        <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Data da Transação</label>
           <Input type="date" {...register('date')} className="font-medium" />
           {errors.date && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.date.message}</p>}
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Descrição</label>
-        <Input {...register('description')} placeholder="Ex: Jantar, Salário, etc." className="font-medium" />
-        {errors.description && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.description.message}</p>}
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Descrição</label>
+          <Input {...register('description')} placeholder="Ex: Jantar, Salário, etc." className="font-medium" />
+          {errors.description && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.description.message}</p>}
+        </div>
       </div>
 
       <Button type="submit" className="w-full h-12 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5" disabled={loading}>

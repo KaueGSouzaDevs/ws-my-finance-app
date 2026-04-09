@@ -29,12 +29,7 @@ export default async function DashboardPage() {
     return acc;
   }, { income: 0, expense: 0 }) || { income: 0, expense: 0 };
 
-  const fullName = 
-    (profileRes.data as any)?.full_name || 
-    user.user_metadata?.full_name || 
-    user.user_metadata?.name || 
-    user.user_metadata?.displayName || 
-    user.email;
+  const fullName = (profileRes.data as any)?.full_name || user.email;
   const firstName = fullName?.split(' ')[0];
 
   return (

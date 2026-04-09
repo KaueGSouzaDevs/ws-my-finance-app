@@ -1,13 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
-import { LayoutDashboard, ArrowUpRight, User, LogOut, Tags, Wallet } from 'lucide-react';
+import { LayoutDashboard, ArrowUpRight, User, LogOut, Tags, Wallet, CreditCard } from 'lucide-react';
 import { signOut } from '@/app/actions/auth';
 
 function BottomNavItem({ icon, label, href }: { icon: React.ReactNode, label: string, href: string }) {
   return (
-    <Link href={href} className="flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-all active:scale-95">
+    <Link href={href} className="flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-primary transition-all active:scale-95 text-center">
       {icon}
-      <span className="text-[10px] font-medium tracking-tight">{label}</span>
+      <span className="text-[9px] font-medium tracking-tight leading-none">{label}</span>
     </Link>
   );
 }
@@ -43,6 +43,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Tags size={20} className="group-hover:scale-110 transition-transform" />
             <span>Categorias</span>
           </Link>
+          <Link href="/dashboard/credit-cards" className="flex items-center space-x-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all font-medium group">
+            <CreditCard size={20} className="group-hover:scale-110 transition-transform" />
+            <span>Cartões</span>
+          </Link>
           <Link href="/dashboard/profile" className="flex items-center space-x-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all font-medium group">
             <User size={20} className="group-hover:scale-110 transition-transform" />
             <span>Perfil</span>
@@ -68,14 +72,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-6 left-6 right-6 h-18 border border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl flex justify-around items-center z-50 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none px-2">
-        <BottomNavItem icon={<LayoutDashboard size={22} />} label="Painel" href="/dashboard" />
-        <BottomNavItem icon={<ArrowUpRight size={22} />} label="Transações" href="/dashboard/transactions" />
-        <BottomNavItem icon={<Tags size={22} />} label="Categorias" href="/dashboard/categories" />
-        <BottomNavItem icon={<User size={22} />} label="Perfil" href="/dashboard/profile" />
+        <BottomNavItem icon={<LayoutDashboard size={20} />} label="Painel" href="/dashboard" />
+        <BottomNavItem icon={<ArrowUpRight size={20} />} label="Transações" href="/dashboard/transactions" />
+        <BottomNavItem icon={<CreditCard size={20} />} label="Cartões" href="/dashboard/credit-cards" />
+        <BottomNavItem icon={<Tags size={20} />} label="Categorias" href="/dashboard/categories" />
         <form action={signOut} className="flex flex-col items-center justify-center">
           <button className="flex flex-col items-center justify-center space-y-1 text-slate-400 hover:text-red-500 transition-all active:scale-95">
-            <LogOut size={22} />
-            <span className="text-[10px] font-medium tracking-tight">Sair</span>
+            <LogOut size={20} />
+            <span className="text-[9px] font-medium tracking-tight leading-none">Sair</span>
           </button>
         </form>
       </nav>
