@@ -40,14 +40,6 @@ export async function signup(formData: z.infer<typeof AuthSchema> & { full_name:
     return { error: error.message };
   }
 
-  if (data.user) {
-    await supabase.from('profiles').insert({
-      id: data.user.id,
-      full_name: formData.full_name,
-      currency: 'BRL'
-    });
-  }
-
   revalidatePath('/', 'layout');
   redirect('/dashboard');
 }
