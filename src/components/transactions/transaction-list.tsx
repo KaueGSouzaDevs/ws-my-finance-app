@@ -10,7 +10,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Trash2, Pencil } from 'lucide-react';
+import { Trash2, Pencil, Calendar } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -36,89 +36,112 @@ export function TransactionList({ transactions, categories }: TransactionListPro
   };
 
   return (
-    <div className="border rounded-xl overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Data</TableHead>
-            <TableHead>Descrição</TableHead>
-            <TableHead>Categoria</TableHead>
-            <TableHead className="text-right">Valor</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {transactions?.map((t) => (
-            <TableRow key={t.id}>
-              <TableCell>{new Date(t.date + 'T00:00:00').toLocaleDateString('pt-BR')}</TableCell>
-              <TableCell className="font-medium">{t.description}</TableCell>
-              <TableCell>
-                <span
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                  style={{
-                    backgroundColor: (t.categories as any)?.color + '20',
-                    color: (t.categories as any)?.color,
-                    border: `1px solid ${(t.categories as any)?.color}40`
-                  }}
-                >
-                  {(t.categories as any)?.icon} {(t.categories as any)?.name}
-                </span>
-              </TableCell>
-              <TableCell className={`text-right font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
-                {t.type === 'income' ? '+' : '-'}
-                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.amount)}
-              </TableCell>
-              <TableCell className="text-right flex justify-end gap-2">
-                <Dialog open={editingId === t.id} onOpenChange={(open) => !open && setEditingId(null)}>
-                  <DialogTrigger asChild>
+    <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl overflow-hidden border-none p-2">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+              <TableHead className="pl-6 font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest">Detalhes</TableHead>
+              <TableHead className="font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest hidden md:table-cell">Categoria</TableHead>
+              <TableHead className="font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest text-right">Valor</TableHead>
+              <TableHead className="pr-6 font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {transactions?.map((t) => (
+              <TableRow key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 border-slate-100 dark:border-slate-800 transition-colors group">
+                <TableCell className="py-5 pl-6">
+                  <div className="flex items-center space-x-4">
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center text-lg shadow-sm group-hover:scale-110 transition-transform"
+                      style={{
+                        backgroundColor: (t.categories as any)?.color + '15',
+                        color: (t.categories as any)?.color,
+                      }}
+                    >
+                      {(t.categories as any)?.icon}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{t.description}</span>
+                      <div className="flex items-center mt-1 text-[11px] font-bold text-slate-400 uppercase tracking-tighter">
+                        <Calendar size={10} className="mr-1" />
+                        {new Date(t.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <span
+                    className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
+                    style={{
+                      backgroundColor: (t.categories as any)?.color + '15',
+                      color: (t.categories as any)?.color,
+                    }}
+                  >
+                    {(t.categories as any)?.name}
+                  </span>
+                </TableCell>
+                <TableCell className={`text-right font-black text-base ${t.type === 'income' ? 'text-emerald-500' : 'text-slate-900 dark:text-slate-100'}`}>
+                  {t.type === 'income' ? '+' : '-'}
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(t.amount)}
+                </TableCell>
+                <TableCell className="text-right pr-6">
+                  <div className="flex justify-end gap-1">
+                    <Dialog open={editingId === t.id} onOpenChange={(open) => !open && setEditingId(null)}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all"
+                          onClick={() => setEditingId(t.id)}
+                        >
+                          <Pencil size={16} />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden max-w-[95vw] sm:max-w-lg">
+                        <div className="bg-primary h-2 w-full" />
+                        <div className="p-8">
+                          <DialogHeader className="mb-6">
+                            <DialogTitle className="text-2xl font-black tracking-tight">Editar Transação</DialogTitle>
+                          </DialogHeader>
+                          <TransactionForm
+                            categories={categories}
+                            initialData={{
+                              id: t.id,
+                              amount: t.amount,
+                              category_id: t.category_id,
+                              description: t.description || '',
+                              date: t.date,
+                              type: t.type
+                            }}
+                            onSuccess={() => setEditingId(null)}
+                          />
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setEditingId(t.id)}
+                      className="h-9 w-9 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all"
+                      onClick={() => handleDelete(t.id)}
                     >
-                      <Pencil size={16} />
+                      <Trash2 size={16} />
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Editar Transação</DialogTitle>
-                    </DialogHeader>
-                    <TransactionForm
-                      categories={categories}
-                      initialData={{
-                        id: t.id,
-                        amount: t.amount,
-                        category_id: t.category_id,
-                        description: t.description || '',
-                        date: t.date,
-                        type: t.type
-                      }}
-                      onSuccess={() => setEditingId(null)}
-                    />
-                  </DialogContent>
-                </Dialog>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => handleDelete(t.id)}
-                >
-                  <Trash2 size={16} />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-          {(!transactions || transactions.length === 0) && (
-            <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                Nenhuma transação encontrada.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {(!transactions || transactions.length === 0) && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-16 text-slate-400 font-medium italic">
+                  Nenhuma transação encontrada.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
