@@ -10,6 +10,8 @@ const TransactionSchema = z.object({
   date: z.string(),
   type: z.enum(['income', 'expense']),
   credit_card_id: z.string().uuid().optional().nullable(),
+  installments: z.coerce.number().min(1).max(72).default(1),
+  is_installment: z.boolean().default(false),
 });
 
 export async function createTransaction(formData: z.infer<typeof TransactionSchema>) {
@@ -18,10 +20,33 @@ export async function createTransaction(formData: z.infer<typeof TransactionSche
 
   if (!user) throw new Error("Unauthorized");
 
-  // @ts-ignore
-  const { error } = await supabase
-    .from('transactions' as any)
-    .insert({
+  const transactionsToInsert = [];
+  const parentId = crypto.randomUUID();
+
+  if (formData.type === 'expense' && formData.is_installment && formData.installments > 1) {
+    const installmentAmount = formData.amount / formData.installments;
+    const baseDate = new Date(formData.date + 'T00:00:00');
+
+    for (let i = 0; i < formData.installments; i++) {
+      const installmentDate = new Date(baseDate);
+      installmentDate.setMonth(installmentDate.getMonth() + i);
+
+      transactionsToInsert.push({
+        id: i === 0 ? parentId : crypto.randomUUID(),
+        amount: installmentAmount,
+        category_id: formData.category_id,
+        description: `${formData.description} (${i + 1}/${formData.installments})`,
+        date: installmentDate.toISOString().split('T')[0],
+        type: formData.type,
+        credit_card_id: formData.credit_card_id || null,
+        user_id: user.id,
+        parent_id: i === 0 ? null : parentId,
+        installment_number: i + 1,
+        total_installments: formData.installments
+      });
+    }
+  } else {
+    transactionsToInsert.push({
       amount: formData.amount,
       category_id: formData.category_id,
       description: formData.description,
@@ -29,7 +54,13 @@ export async function createTransaction(formData: z.infer<typeof TransactionSche
       type: formData.type,
       credit_card_id: formData.credit_card_id || null,
       user_id: user.id
-    } as any);
+    });
+  }
+
+  // @ts-ignore
+  const { error } = await supabase
+    .from('transactions' as any)
+    .insert(transactionsToInsert as any);
 
   if (error) throw new Error(error.message);
 

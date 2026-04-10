@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { BalanceCard } from '@/components/dashboard/balance-card';
 import { SummaryGrid } from '@/components/dashboard/summary-grid';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
+import { FutureVision } from '@/components/dashboard/future-vision';
 import { LayoutDashboard } from 'lucide-react';
 
 export default async function DashboardPage() {
@@ -20,12 +21,18 @@ export default async function DashboardPage() {
 
   // Parallel data fetching
   const [transactionsRes, profileRes] = await Promise.all([
-    supabase.from('transactions').select('amount, type'),
+    supabase.from('transactions').select('amount, type, date'),
     supabase.from('profiles').select('*').single()
   ]);
 
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+
+  // Only sum transactions up to today for the actual balance
   const totals = (transactionsRes.data as any[])?.reduce((acc, curr) => {
-    acc[curr.type as 'income' | 'expense'] += Number(curr.amount);
+    if (curr.date <= todayStr) {
+      acc[curr.type as 'income' | 'expense'] += Number(curr.amount);
+    }
     return acc;
   }, { income: 0, expense: 0 }) || { income: 0, expense: 0 };
 
@@ -46,13 +53,14 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-7 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-7 space-y-8">
           <BalanceCard
             balance={totals.income - totals.expense}
             currency={(profileRes.data as any)?.currency || 'BRL'}
           />
           <SummaryGrid income={totals.income} expense={totals.expense} />
+          <FutureVision />
         </div>
 
         <div className="lg:col-span-5">

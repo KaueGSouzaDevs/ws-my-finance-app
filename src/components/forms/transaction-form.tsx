@@ -1,11 +1,12 @@
 'use client'
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createTransaction, updateTransaction } from '@/app/actions/transactions';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,8 @@ const TransactionSchema = z.object({
   date: z.string(),
   type: z.enum(['income', 'expense']),
   credit_card_id: z.string().uuid().optional().nullable(),
+  installments: z.coerce.number().min(1).max(72).default(1),
+  is_installment: z.boolean().default(false),
 });
 
 type TransactionFormValues = z.infer<typeof TransactionSchema>;
@@ -28,7 +31,7 @@ interface Category {
 
 interface TransactionFormProps {
   categories: Category[];
-  initialData?: TransactionFormValues & { id: string };
+  initialData?: any; // To simplify handling current schema
   onSuccess?: () => void;
 }
 
@@ -37,18 +40,21 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
   const [cards, setCards] = useState<any[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<TransactionFormValues>({
+  const { register, handleSubmit, reset, watch, setValue, control, formState: { errors } } = useForm<TransactionFormValues>({
     resolver: zodResolver(TransactionSchema) as any,
     defaultValues: initialData || {
       type: 'expense',
       amount: 0,
       date: new Date().toISOString().split('T')[0],
       category_id: '',
-      credit_card_id: null
+      credit_card_id: null,
+      installments: 1,
+      is_installment: false
     },
   });
 
   const transactionType = watch('type');
+  const isInstallment = watch('is_installment');
 
   useEffect(() => {
     async function fetchCards() {
@@ -105,7 +111,10 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
               onChange={(e) => {
                 const val = e.target.value as 'income' | 'expense';
                 setValue('type', val);
-                if (val === 'income') setValue('credit_card_id', null);
+                if (val === 'income') {
+                  setValue('credit_card_id', null);
+                  setValue('is_installment', false);
+                }
               }}
             >
               <option value="expense">📉 Despesa</option>
@@ -120,7 +129,18 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
 
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Valor (R$)</label>
-          <Input type="number" step="0.01" {...register('amount')} placeholder="0,00" className="font-bold text-base" />
+          <Controller
+            name="amount"
+            control={control}
+            render={({ field }) => (
+              <CurrencyInput
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                className="font-bold text-base"
+              />
+            )}
+          />
           {errors.amount && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.amount.message}</p>}
         </div>
 
@@ -179,6 +199,33 @@ export function TransactionForm({ categories, initialData, onSuccess }: Transact
           {errors.description && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.description.message}</p>}
         </div>
       </div>
+
+      {transactionType === 'expense' && !initialData && (
+        <div className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 space-y-4">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Esta compra é parcelada?</label>
+            <input
+              type="checkbox"
+              {...register('is_installment')}
+              className="w-5 h-5 accent-primary cursor-pointer"
+            />
+          </div>
+
+          {isInstallment && (
+            <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
+              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Número de Parcelas</label>
+              <Input
+                type="number"
+                {...register('installments')}
+                min={1}
+                max={72}
+                className="font-bold text-center"
+              />
+              <p className="text-[10px] text-slate-400 italic">O valor total de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(watch('amount'))} será dividido em {watch('installments')}x de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(watch('amount') / (Number(watch('installments')) || 1))}.</p>
+            </div>
+          )}
+        </div>
+      )}
 
       <Button type="submit" className="w-full h-12 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5" disabled={loading}>
         {loading ? "Processando..." : (initialData ? "Atualizar Registro" : "Confirmar Lançamento")}

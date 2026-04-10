@@ -5,8 +5,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
@@ -15,6 +13,13 @@ import { ChevronLeft, ChevronRight, ReceiptText } from 'lucide-react';
 interface InvoiceViewProps {
   card: any;
   transactions: any[];
+}
+
+function getActualDay(day: number, month: number, year: number) {
+  if (day === 0) {
+    return new Date(year, month + 1, 0).getDate();
+  }
+  return day;
 }
 
 export function InvoiceView({ card, transactions }: InvoiceViewProps) {
@@ -29,9 +34,13 @@ export function InvoiceView({ card, transactions }: InvoiceViewProps) {
   const filteredTransactions = transactions.filter(t => {
     const purchaseDate = new Date(t.date + 'T00:00:00');
     const purchaseDay = purchaseDate.getDate();
+    const purchaseMonth = purchaseDate.getMonth();
+    const purchaseYear = purchaseDate.getFullYear();
+
+    const closingDay = getActualDay(card.closing_day, purchaseMonth, purchaseYear);
 
     const billingDate = new Date(purchaseDate);
-    if (purchaseDay > card.closing_day) {
+    if (purchaseDay > closingDay) {
       billingDate.setMonth(billingDate.getMonth() + 1);
     }
 
@@ -49,7 +58,7 @@ export function InvoiceView({ card, transactions }: InvoiceViewProps) {
             <ReceiptText size={20} />
           </div>
           <div>
-            <h3 className="font-bold text-slate-900 dark:text-white">Fatura de {viewDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h3>
+            <h3 className="font-bold text-slate-900 dark:text-white capitalize">Fatura de {viewDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</h3>
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cartão: {card.name}</p>
           </div>
         </div>

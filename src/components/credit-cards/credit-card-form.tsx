@@ -1,18 +1,19 @@
 'use client'
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createCreditCard } from '@/app/actions/credit-cards';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 const CreditCardSchema = z.object({
   name: z.string().min(1, "O nome do cartão é obrigatório"),
   limit_amount: z.coerce.number().positive("O limite deve ser positivo"),
-  closing_day: z.coerce.number().min(1).max(31, "Dia inválido"),
-  due_day: z.coerce.number().min(1).max(31, "Dia inválido"),
+  closing_day: z.coerce.number().min(0).max(31, "Dia inválido"),
+  due_day: z.coerce.number().min(0).max(31, "Dia inválido"),
 });
 
 type CreditCardFormValues = z.infer<typeof CreditCardSchema>;
@@ -21,7 +22,7 @@ export function CreditCardForm({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<CreditCardFormValues>({
+  const { register, handleSubmit, reset, control, formState: { errors } } = useForm<CreditCardFormValues>({
     resolver: zodResolver(CreditCardSchema),
     defaultValues: { name: '', limit_amount: 0, closing_day: 1, due_day: 10 },
   });
@@ -40,6 +41,8 @@ export function CreditCardForm({ onSuccess }: { onSuccess?: () => void }) {
       setLoading(false);
     }
   }
+
+  const selectStyles = "flex h-11 w-full rounded-2xl border border-input bg-background/50 dark:bg-slate-900/50 px-4 py-2 text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 focus-visible:border-primary appearance-none cursor-pointer";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -61,19 +64,56 @@ export function CreditCardForm({ onSuccess }: { onSuccess?: () => void }) {
 
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Limite Total (R$)</label>
-          <Input type="number" step="0.01" {...register('limit_amount')} placeholder="0,00" className="font-bold text-base" />
+          <Controller
+            name="limit_amount"
+            control={control}
+            render={({ field }) => (
+              <CurrencyInput
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                className="font-bold text-base"
+              />
+            )}
+          />
           {errors.limit_amount && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.limit_amount.message}</p>}
         </div>
 
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Dia de Fechamento</label>
-          <Input type="number" {...register('closing_day')} placeholder="1-31" className="font-medium" />
+          <div className="relative">
+            <select
+              {...register('closing_day')}
+              className={selectStyles}
+            >
+              {[...Array(31)].map((_, i) => (
+                <option key={i+1} value={i+1}>Dia {i+1}</option>
+              ))}
+              <option value="0">Último dia do mês</option>
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              ▼
+            </div>
+          </div>
           {errors.closing_day && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.closing_day.message}</p>}
         </div>
 
         <div className="space-y-2">
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Dia de Vencimento</label>
-          <Input type="number" {...register('due_day')} placeholder="1-31" className="font-medium" />
+          <div className="relative">
+            <select
+              {...register('due_day')}
+              className={selectStyles}
+            >
+              {[...Array(31)].map((_, i) => (
+                <option key={i+1} value={i+1}>Dia {i+1}</option>
+              ))}
+              <option value="0">Último dia do mês</option>
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              ▼
+            </div>
+          </div>
           {errors.due_day && <p className="text-[10px] font-bold text-rose-500 px-1">{errors.due_day.message}</p>}
         </div>
       </div>

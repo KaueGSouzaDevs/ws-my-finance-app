@@ -3,6 +3,15 @@ import { CreditCardForm } from '@/components/credit-cards/credit-card-form';
 import { CreditCardList } from '@/components/credit-cards/credit-card-list';
 import { CreditCard, Plus } from 'lucide-react';
 
+// Helper to get actual day from card day (handling last day of month logic)
+function getActualDay(day: number, month: number, year: number) {
+  if (day === 0) {
+    // Return last day of specified month/year
+    return new Date(year, month + 1, 0).getDate();
+  }
+  return day;
+}
+
 export default async function CreditCardsPage() {
   const supabase = createClient();
 
@@ -36,19 +45,33 @@ export default async function CreditCardsPage() {
 
         const purchaseDate = new Date(t.date + 'T00:00:00');
         const purchaseDay = purchaseDate.getDate();
+        const purchaseMonth = purchaseDate.getMonth();
+        const purchaseYear = purchaseDate.getFullYear();
 
-        const invoiceClosingDate = new Date(currentYear, currentMonth, card.closing_day);
-        if (now > invoiceClosingDate) {
-          invoiceClosingDate.setMonth(invoiceClosingDate.getMonth() + 1);
-        }
+        // Get actual closing day for the month of purchase
+        const closingDay = getActualDay(card.closing_day, purchaseMonth, purchaseYear);
 
         const billingDate = new Date(purchaseDate);
-        if (purchaseDay > card.closing_day) {
+        if (purchaseDay > closingDay) {
           billingDate.setMonth(billingDate.getMonth() + 1);
         }
 
-        if (billingDate.getMonth() === invoiceClosingDate.getMonth() &&
-            billingDate.getFullYear() === invoiceClosingDate.getFullYear()) {
+        // Determine current open invoice closing date for calculation
+        const currentInvoiceClosingDay = getActualDay(card.closing_day, currentMonth, currentYear);
+        const currentInvoiceClosingDate = new Date(currentYear, currentMonth, currentInvoiceClosingDay);
+
+        if (now > currentInvoiceClosingDate) {
+          // If we passed this month's closing, the "current open" is next month's
+          const nextMonth = currentMonth + 1;
+          const nextYear = currentYear + (nextMonth > 11 ? 1 : 0);
+          const nextClosingDay = getActualDay(card.closing_day, nextMonth % 12, nextYear);
+          currentInvoiceClosingDate.setFullYear(nextYear);
+          currentInvoiceClosingDate.setMonth(nextMonth % 12);
+          currentInvoiceClosingDate.setDate(nextClosingDay);
+        }
+
+        if (billingDate.getMonth() === currentInvoiceClosingDate.getMonth() &&
+            billingDate.getFullYear() === currentInvoiceClosingDate.getFullYear()) {
           total += Number(t.amount);
         }
       });
