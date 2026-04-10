@@ -28,6 +28,23 @@ export async function createCreditCard(formData: z.infer<typeof CreditCardSchema
   revalidatePath('/dashboard/credit-cards');
 }
 
+export async function updateCreditCard(id: string, formData: z.infer<typeof CreditCardSchema>) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Não autorizado");
+
+  const { error } = await supabase
+    .from('credit_cards' as any)
+    .update(formData)
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath('/dashboard/credit-cards');
+}
+
 export async function deleteCreditCard(id: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

@@ -30,6 +30,26 @@ export async function createCategory(formData: z.infer<typeof CategorySchema>) {
   revalidatePath('/dashboard/transactions');
 }
 
+export async function updateCategory(id: string, formData: z.infer<typeof CategorySchema>) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) throw new Error("Não autorizado");
+
+  const { error } = await supabase
+    .from('categories')
+    .update(formData)
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath('/dashboard/categories');
+  revalidatePath('/dashboard/transactions');
+}
+
 export async function deleteCategory(id: string) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();

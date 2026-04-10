@@ -2,7 +2,7 @@
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createCreditCard } from '@/app/actions/credit-cards';
+import { createCreditCard, updateCreditCard } from '@/app/actions/credit-cards';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CurrencyInput } from '@/components/ui/currency-input';
@@ -18,22 +18,32 @@ const CreditCardSchema = z.object({
 
 type CreditCardFormValues = z.infer<typeof CreditCardSchema>;
 
-export function CreditCardForm({ onSuccess }: { onSuccess?: () => void }) {
+interface CreditCardFormProps {
+  initialData?: CreditCardFormValues & { id: string };
+  onSuccess?: () => void;
+}
+
+export function CreditCardForm({ initialData, onSuccess }: CreditCardFormProps) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const { register, handleSubmit, reset, control, formState: { errors } } = useForm<CreditCardFormValues>({
     resolver: zodResolver(CreditCardSchema),
-    defaultValues: { name: '', limit_amount: 0, closing_day: 1, due_day: 10 },
+    defaultValues: initialData || { name: '', limit_amount: 0, closing_day: 1, due_day: 10 },
   });
 
   async function onSubmit(values: CreditCardFormValues) {
     setLoading(true);
     setMessage(null);
     try {
-      await createCreditCard(values);
-      reset();
-      setMessage({ type: 'success', text: "Cartão registrado com sucesso!" });
+      if (initialData?.id) {
+        await updateCreditCard(initialData.id, values);
+        setMessage({ type: 'success', text: "Cartão atualizado com sucesso!" });
+      } else {
+        await createCreditCard(values);
+        reset();
+        setMessage({ type: 'success', text: "Cartão registrado com sucesso!" });
+      }
       if (onSuccess) onSuccess();
     } catch (e: any) {
       setMessage({ type: 'error', text: e.message || "Algo deu errado" });
@@ -119,7 +129,7 @@ export function CreditCardForm({ onSuccess }: { onSuccess?: () => void }) {
       </div>
 
       <Button type="submit" className="w-full h-12 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5" disabled={loading}>
-        {loading ? "Processando..." : "Registrar Cartão"}
+        {loading ? "Processando..." : initialData?.id ? "Salvar Alterações" : "Registrar Cartão"}
       </Button>
     </form>
   );
