@@ -1,16 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { CategoryForm } from '@/components/forms/category-form';
-import { deleteCategory } from '@/app/actions/categories';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { Trash2, Tags, Plus } from 'lucide-react';
+import { CategoryList } from '@/components/dashboard/category-list';
+import { Tags, Plus } from 'lucide-react';
 
 export default async function CategoriesPage() {
   const supabase = createClient();
@@ -43,62 +34,7 @@ export default async function CategoriesPage() {
         <CategoryForm />
       </div>
 
-      <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-xl overflow-hidden border-none p-2">
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
-              <TableHead className="pl-8 font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest">Ícone & Nome</TableHead>
-              <TableHead className="font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest hidden sm:table-cell text-center">Cor</TableHead>
-              <TableHead className="pr-8 font-bold text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories?.map((c) => (
-              <TableRow key={c.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 border-slate-100 dark:border-slate-800 transition-colors group">
-                <TableCell className="py-5 pl-8">
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform"
-                      style={{
-                        backgroundColor: c.color + '15',
-                        color: c.color,
-                      }}
-                    >
-                      {c.icon}
-                    </div>
-                    <span className="font-bold text-slate-800 dark:text-slate-100 text-base">{c.name}</span>
-                  </div>
-                </TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  <div className="flex justify-center">
-                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
-                      <div
-                        className="w-4 h-4 rounded-full shadow-sm"
-                        style={{ backgroundColor: c.color }}
-                      />
-                      <span className="font-mono text-xs font-bold text-slate-500 tracking-tighter uppercase">{c.color}</span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right pr-8">
-                  {!c.is_system ? (
-                    <form action={async () => {
-                      'use server'
-                      await deleteCategory(c.id);
-                    }}>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all">
-                        <Trash2 size={18} />
-                      </Button>
-                    </form>
-                  ) : (
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg">Sistema</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <CategoryList categories={categories || []} />
     </div>
   );
 }

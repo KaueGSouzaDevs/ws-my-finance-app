@@ -12,7 +12,7 @@ END $$;
 -- 2. Habilitar RLS se não estiver habilitado
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 
--- 3. Remover políticas antigas para evitar conflitos
+-- 3. Remover políticas antigas para evitar conflitos (opcional, dependendo do estado atual)
 DROP POLICY IF EXISTS "Categories viewable by user" ON categories;
 DROP POLICY IF EXISTS "Users can insert own categories" ON categories;
 DROP POLICY IF EXISTS "Users can update own categories" ON categories;
@@ -21,25 +21,14 @@ DROP POLICY IF EXISTS "Categories are viewable by everyone" ON categories;
 DROP POLICY IF EXISTS "Users can create own categories" ON categories;
 
 -- 4. Criar novas políticas de segurança
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Categories viewable by user' AND tablename = 'categories') THEN
-        CREATE POLICY "Categories viewable by user" ON categories
-          FOR SELECT USING (is_system = true OR auth.uid() = user_id);
-    END IF;
+CREATE POLICY "Categories viewable by user" ON categories
+  FOR SELECT USING (is_system = true OR auth.uid() = user_id);
 
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can insert own categories' AND tablename = 'categories') THEN
-        CREATE POLICY "Users can insert own categories" ON categories
-          FOR INSERT WITH CHECK (auth.uid() = user_id AND is_system = false);
-    END IF;
+CREATE POLICY "Users can insert own categories" ON categories
+  FOR INSERT WITH CHECK (auth.uid() = user_id AND is_system = false);
 
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can update own categories' AND tablename = 'categories') THEN
-        CREATE POLICY "Users can update own categories" ON categories
-          FOR UPDATE USING (auth.uid() = user_id AND is_system = false);
-    END IF;
+CREATE POLICY "Users can update own categories" ON categories
+  FOR UPDATE USING (auth.uid() = user_id AND is_system = false);
 
-    IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Users can delete own categories' AND tablename = 'categories') THEN
-        CREATE POLICY "Users can delete own categories" ON categories
-          FOR DELETE USING (auth.uid() = user_id AND is_system = false);
-    END IF;
-END $$;
+CREATE POLICY "Users can delete own categories" ON categories
+  FOR DELETE USING (auth.uid() = user_id AND is_system = false);

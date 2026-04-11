@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createCategory } from '@/app/actions/categories';
+import { createCategory, updateCategory } from '@/app/actions/categories';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
@@ -16,13 +16,18 @@ const CategorySchema = z.object({
 
 type CategoryFormValues = z.infer<typeof CategorySchema>;
 
-export function CategoryForm() {
+interface CategoryFormProps {
+  initialData?: CategoryFormValues & { id: string };
+  onSuccess?: () => void;
+}
+
+export function CategoryForm({ initialData, onSuccess }: CategoryFormProps) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm<CategoryFormValues>({
     resolver: zodResolver(CategorySchema),
-    defaultValues: { name: '', icon: '💰', color: '#007AFF' },
+    defaultValues: initialData || { name: '', icon: '💰', color: '#007AFF' },
   });
 
   const selectedColor = watch('color');
@@ -31,9 +36,15 @@ export function CategoryForm() {
     setLoading(true);
     setMessage(null);
     try {
-      await createCategory(values);
-      reset();
-      setMessage({ type: 'success', text: "Categoria criada com sucesso!" });
+      if (initialData?.id) {
+        await updateCategory(initialData.id, values);
+        setMessage({ type: 'success', text: "Categoria atualizada com sucesso!" });
+      } else {
+        await createCategory(values);
+        reset();
+        setMessage({ type: 'success', text: "Categoria criada com sucesso!" });
+      }
+      if (onSuccess) onSuccess();
     } catch (e: any) {
       setMessage({ type: 'error', text: e.message || "Algo deu errado" });
     } finally {
@@ -91,7 +102,7 @@ export function CategoryForm() {
       </div>
 
       <Button type="submit" className="w-full h-12 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5" disabled={loading}>
-        {loading ? "Processando..." : "Registrar Categoria"}
+        {loading ? "Processando..." : initialData?.id ? "Salvar Alterações" : "Registrar Categoria"}
       </Button>
     </form>
   );
